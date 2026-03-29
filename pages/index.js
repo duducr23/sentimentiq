@@ -286,22 +286,7 @@ export default function Home() {
           )}
         </div>
 
-        {activeView === "analysis" && <>
-        {/* Admin notes strip */}
-        {ad?.keyPoints?.some(Boolean) && (
-          <div style={{ ...S.card, padding: "14px 18px" }}>
-            <div style={{ fontSize: 11, color: "#64748b", fontFamily: "monospace", marginBottom: 8 }}>נקודות מפתח מהאנליסט</div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {ad.keyPoints.filter(Boolean).map((kp, i) => (
-                <div key={i} style={{ background: `${meta.color}10`, border: `1px solid ${meta.color}25`, borderRadius: 8, padding: "5px 12px", fontSize: 12, color: "#94a3b8" }}>
-                  <span style={{ color: meta.color, marginLeft: 6 }}>▸</span>{kp}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Mode Switcher */}
+        {/* Mode Switcher - always visible */}
         <div style={{ display:"flex", gap:10, marginBottom:16 }}>
           <div onClick={() => setActiveView("analysis")}
             style={{ flex:1, padding:"12px 16px", borderRadius:12, cursor:"pointer", textAlign:"center", background: activeView==="analysis" ? "rgba(255,255,255,0.04)" : "#0d1420", border:`1px solid ${activeView==="analysis" ? meta.color : "rgba(255,255,255,0.07)"}`, transition:"all 0.2s" }}>
@@ -331,7 +316,23 @@ export default function Home() {
               keyPoints={ad?.keyPoints || []}
               prices={prices[market] || {}}
               color={meta.color}
+              username={currentUser?.username}
             />
+          </div>
+        )}
+
+        {activeView === "analysis" && <>
+        {/* Admin notes strip */}
+        {ad?.keyPoints?.some(Boolean) && (
+          <div style={{ ...S.card, padding: "14px 18px" }}>
+            <div style={{ fontSize: 11, color: "#64748b", fontFamily: "monospace", marginBottom: 8 }}>נקודות מפתח מהאנליסט</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {ad.keyPoints.filter(Boolean).map((kp, i) => (
+                <div key={i} style={{ background: `${meta.color}10`, border: `1px solid ${meta.color}25`, borderRadius: 8, padding: "5px 12px", fontSize: 12, color: "#94a3b8" }}>
+                  <span style={{ color: meta.color, marginLeft: 6 }}>▸</span>{kp}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
