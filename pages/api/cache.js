@@ -1,11 +1,9 @@
 import { getAllCached, clearCache, getCacheSize } from "../../lib/cache";
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === "GET") {
-    return res.status(200).json({
-      size: getCacheSize(),
-      entries: getAllCached(),
-    });
+    const [entries, size] = await Promise.all([getAllCached(), getCacheSize()]);
+    return res.status(200).json({ size, entries });
   }
 
   if (req.method === "DELETE") {
@@ -13,7 +11,7 @@ export default function handler(req, res) {
     if (password !== process.env.ADMIN_PASSWORD) {
       return res.status(401).json({ error: "Unauthorized" });
     }
-    clearCache();
+    await clearCache();
     return res.status(200).json({ ok: true, message: "Cache cleared" });
   }
 

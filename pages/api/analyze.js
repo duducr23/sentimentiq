@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   if (!query) return res.status(400).json({ error: "Missing query" });
 
   // Check cache first
-  const cached = getCached(market || "general", query);
+  const cached = await getCached(market || "general", query);
   if (cached) return res.status(200).json(cached);
 
   // Check daily limit
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
     const txt = extractAllText(data);
     const parsed = safeExtractJSON(txt);
 
-    setCached(market || "general", query, parsed);
+    await setCached(market || "general", query, parsed);
     try { if (username) await recordAnalysis(username); } catch(_) {}
     res.status(200).json(parsed);
   } catch (e) {
