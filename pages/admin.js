@@ -206,7 +206,7 @@ export default function Admin() {
                               </span>
                             </td>
                             <td style={{ padding: "10px 16px", fontSize: 12, color: "#64748b", fontFamily: "monospace" }}>{u.createdAt}</td>
-                            <td style={{ padding: "10px 16px", fontSize: 13, fontFamily: "monospace", color: u.dailyCount >= 3 ? "#ef4444" : "#f4b942" }}>{u.dailyCount}/3</td>
+                            <td style={{ padding: "10px 16px", fontSize: 13, fontFamily: "monospace", color: u.dailyCount >= (u.dailyLimit ?? 3) ? "#ef4444" : "#f4b942" }}>{u.dailyCount}/{u.dailyLimit ?? 3}</td>
                             <td style={{ padding: "10px 16px", fontSize: 13, color: "#94a3b8", fontFamily: "monospace" }}>{u.totalAnalyses}</td>
                             <td style={{ padding: "10px 16px" }}>
                               <button onClick={() => { setEditingUser(u.username); setEditCredits(u.dailyCount); }}
