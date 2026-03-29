@@ -1,19 +1,27 @@
-import { registerUser, loginUser, canAnalyze, sendVerificationCode, verifyCode } from "../../lib/userStore";
+import { registerUser, loginUser, sendResetCode, resetPassword, canAnalyze, checkUserExists } from "../../lib/userStore";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
-  const { action, email, username, code } = req.body || {};
+  const { action, email, password, newPassword, code, username } = req.body || {};
 
-  // שלב 1: שלח קוד אימות למייל
-  if (action === "send_code") {
-    if (!email) return res.status(400).json({ error: "חסר מייל" });
-    return res.status(200).json(await sendVerificationCode(email));
+  if (action === "register") {
+    if (!email || !password) return res.status(400).json({ error: "חסרים פרטים" });
+    return res.status(200).json(await registerUser(email, username, password));
   }
 
-  // שלב 2: אמת קוד וכנס/רשום
-  if (action === "verify") {
-    if (!email || !code) return res.status(400).json({ error: "חסר מייל או קוד" });
-    return res.status(200).json(await verifyCode(email, code, username));
+  if (action === "login") {
+    if (!email || !password) return res.status(400).json({ error: "חסרים פרטים" });
+    return res.status(200).json(await loginUser(email, password));
+  }
+
+  if (action === "forgot") {
+    if (!email) return res.status(400).json({ error: "חסר מייל" });
+    return res.status(200).json(await sendResetCode(email));
+  }
+
+  if (action === "reset") {
+    if (!email || !code || !newPassword) return res.status(400).json({ error: "חסרים פרטים" });
+    return res.status(200).json(await resetPassword(email, code, newPassword));
   }
 
   if (action === "check") {

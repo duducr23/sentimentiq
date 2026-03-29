@@ -163,7 +163,7 @@ export default function Home() {
       const r = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ context, query, market, username: currentUser?.username }),
+        body: JSON.stringify({ context, query, market, username: currentUser?.username || currentUser?.email }),
       });
       const d = await r.json();
       if (d.limitReached) { setError(d.error); setLoading(false); setLoadStep(""); return; }
