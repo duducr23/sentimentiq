@@ -1,32 +1,52 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 
+const S = {
+  page:  { background:"#080c14", minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Heebo',sans-serif", direction:"rtl", padding:16 },
+  card:  { background:"#0d1420", border:"1px solid rgba(255,255,255,0.08)", borderRadius:20, padding:"36px 32px", width:400, maxWidth:"100%" },
+  inp:   { width:"100%", background:"#080c14", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"12px 14px", color:"#e2e8f0", fontSize:14, fontFamily:"'Heebo',sans-serif", outline:"none", boxSizing:"border-box" },
+  btn:   { width:"100%", padding:13, background:"linear-gradient(135deg,#f4b942,#e09500)", border:"none", borderRadius:12, color:"#080c14", fontWeight:800, fontSize:15, cursor:"pointer", fontFamily:"'Heebo',sans-serif" },
+  label: { fontSize:12, color:"#64748b", display:"block", marginBottom:6, textAlign:"right" },
+  err:   { fontSize:13, color:"#ef4444", background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:8, padding:"10px 14px", marginBottom:14, textAlign:"right" },
+  ok:    { fontSize:13, color:"#10b981", background:"rgba(16,185,129,0.08)", border:"1px solid rgba(16,185,129,0.2)", borderRadius:8, padding:"10px 14px", marginBottom:14, textAlign:"right" },
+  link:  { background:"none", border:"none", color:"#f4b942", fontSize:13, cursor:"pointer", textDecoration:"underline", fontFamily:"'Heebo',sans-serif" },
+};
+
+// ⚠️ OUTSIDE Login — prevents re-mount on every keystroke
+function Field({ label, value, onChange, type = "text", placeholder = "", onEnter }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label style={S.label}>{label}</label>
+      <input
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        type={type}
+        placeholder={placeholder}
+        onKeyDown={e => e.key === "Enter" && onEnter && onEnter()}
+        style={{
+          ...S.inp,
+          direction: type === "email" || type === "password" ? "ltr" : "rtl",
+          textAlign: type === "email" || type === "password" ? "left" : "right",
+        }}
+      />
+    </div>
+  );
+}
+
 export default function Login() {
   const router = useRouter();
-  const [tab, setTab]           = useState("login"); // login | register | forgot | reset
-  const [email, setEmail]       = useState("");
-  const [password, setPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+  const [tab, setTab]                   = useState("login");
+  const [email, setEmail]               = useState("");
+  const [password, setPassword]         = useState("");
+  const [newPassword, setNewPassword]   = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const [code, setCode]         = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
-  const [msg, setMsg]           = useState("");
-
-  const S = {
-    page: { background:"#080c14", minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Heebo',sans-serif", direction:"rtl", padding:16 },
-    card: { background:"#0d1420", border:"1px solid rgba(255,255,255,0.08)", borderRadius:20, padding:"36px 32px", width:400, maxWidth:"100%" },
-    inp:  { width:"100%", background:"#080c14", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"12px 14px", color:"#e2e8f0", fontSize:14, fontFamily:"'Heebo',sans-serif", outline:"none" },
-    btn:  { width:"100%", padding:13, background:"linear-gradient(135deg,#f4b942,#e09500)", border:"none", borderRadius:12, color:"#080c14", fontWeight:800, fontSize:15, cursor:"pointer", fontFamily:"'Heebo',sans-serif" },
-    label: { fontSize:12, color:"#64748b", display:"block", marginBottom:6, textAlign:"right" },
-    err:  { fontSize:13, color:"#ef4444", background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:8, padding:"10px 14px", marginBottom:14, textAlign:"right" },
-    ok:   { fontSize:13, color:"#10b981", background:"rgba(16,185,129,0.08)", border:"1px solid rgba(16,185,129,0.2)", borderRadius:8, padding:"10px 14px", marginBottom:14, textAlign:"right" },
-    link: { background:"none", border:"none", color:"#f4b942", fontSize:13, cursor:"pointer", textDecoration:"underline", fontFamily:"'Heebo',sans-serif" },
-  };
+  const [username, setUsername]         = useState("");
+  const [code, setCode]                 = useState("");
+  const [loading, setLoading]           = useState(false);
+  const [error, setError]               = useState("");
+  const [msg, setMsg]                   = useState("");
 
   const reset = () => { setError(""); setMsg(""); setPassword(""); setNewPassword(""); setConfirmPassword(""); setCode(""); };
-
   const doLogin = async () => {
     if (!email || !password) { setError("אנא מלא מייל וסיסמה"); return; }
     setLoading(true); setError("");
@@ -76,15 +96,6 @@ export default function Login() {
     setLoading(false);
   };
 
-  const Field = ({ label, value, onChange, type="text", placeholder="" }) => (
-    <div style={{ marginBottom:14 }}>
-      <label style={S.label}>{label}</label>
-      <input value={value} onChange={e => onChange(e.target.value)} type={type} placeholder={placeholder}
-        onKeyDown={e => e.key==="Enter" && (tab==="login" ? doLogin() : tab==="register" ? doRegister() : tab==="forgot" ? doForgot() : doReset())}
-        style={{ ...S.inp, direction: type==="email" || type==="password" ? "ltr" : "rtl", textAlign: type==="email" || type==="password" ? "left" : "right" }}/>
-    </div>
-  );
-
   return (
     <div style={S.page}>
       <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
@@ -116,8 +127,8 @@ export default function Login() {
         {/* LOGIN */}
         {tab === "login" && (
           <>
-            <Field label="כתובת מייל" value={email} onChange={setEmail} type="email" placeholder="your@email.com"/>
-            <Field label="סיסמה" value={password} onChange={setPassword} type="password" placeholder="••••••"/>
+            <Field label="כתובת מייל" value={email} onChange={setEmail} type="email" placeholder="your@email.com" onEnter={doLogin}/>
+            <Field label="סיסמה" value={password} onChange={setPassword} type="password" placeholder="••••••" onEnter={doLogin}/>
             <button onClick={doLogin} disabled={loading} style={{ ...S.btn, opacity: loading ? 0.6 : 1, marginBottom:12 }}>
               {loading ? "מתחבר..." : "כניסה ⚡"}
             </button>
@@ -130,10 +141,10 @@ export default function Login() {
         {/* REGISTER */}
         {tab === "register" && (
           <>
-            <Field label="שם תצוגה" value={username} onChange={setUsername} placeholder="השם שיוצג לך"/>
-            <Field label="כתובת מייל" value={email} onChange={setEmail} type="email" placeholder="your@email.com"/>
-            <Field label="סיסמה (לפחות 6 תווים)" value={password} onChange={setPassword} type="password" placeholder="••••••"/>
-            <Field label="אימות סיסמה" value={confirmPassword} onChange={setConfirmPassword} type="password" placeholder="••••••"/>
+            <Field label="שם תצוגה" value={username} onChange={setUsername} placeholder="השם שיוצג לך" onEnter={doRegister}/>
+            <Field label="כתובת מייל" value={email} onChange={setEmail} type="email" placeholder="your@email.com" onEnter={doRegister}/>
+            <Field label="סיסמה (לפחות 6 תווים)" value={password} onChange={setPassword} type="password" placeholder="••••••" onEnter={doRegister}/>
+            <Field label="אימות סיסמה" value={confirmPassword} onChange={setConfirmPassword} type="password" placeholder="••••••" onEnter={doRegister}/>
             <div style={{ fontSize:11, color:"#475569", marginBottom:14, textAlign:"right" }}>⚠️ השם והמייל ינעלו יחד ולא ניתן לשנות</div>
             <button onClick={doRegister} disabled={loading} style={{ ...S.btn, opacity: loading ? 0.6 : 1 }}>
               {loading ? "נרשם..." : "הרשמה והתחלה ⚡"}
@@ -145,7 +156,7 @@ export default function Login() {
         {tab === "forgot" && (
           <>
             <div style={{ fontSize:15, fontWeight:700, color:"#e2e8f0", marginBottom:16, textAlign:"right" }}>שחזור סיסמה</div>
-            <Field label="כתובת מייל" value={email} onChange={setEmail} type="email" placeholder="your@email.com"/>
+            <Field label="כתובת מייל" value={email} onChange={setEmail} type="email" placeholder="your@email.com" onEnter={doForgot}/>
             <button onClick={doForgot} disabled={loading} style={{ ...S.btn, opacity: loading ? 0.6 : 1, marginBottom:12 }}>
               {loading ? "שולח..." : "שלח קוד לאיפוס"}
             </button>
@@ -164,8 +175,8 @@ export default function Login() {
               <input value={code} onChange={e => setCode(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="123456" inputMode="numeric"
                 style={{ ...S.inp, textAlign:"center", fontSize:24, letterSpacing:8, fontFamily:"monospace" }}/>
             </div>
-            <Field label="סיסמה חדשה" value={newPassword} onChange={setNewPassword} type="password" placeholder="••••••"/>
-            <Field label="אימות סיסמה" value={confirmPassword} onChange={setConfirmPassword} type="password" placeholder="••••••"/>
+            <Field label="סיסמה חדשה" value={newPassword} onChange={setNewPassword} type="password" placeholder="••••••" onEnter={doReset}/>
+            <Field label="אימות סיסמה" value={confirmPassword} onChange={setConfirmPassword} type="password" placeholder="••••••" onEnter={doReset}/>
             <button onClick={doReset} disabled={loading} style={{ ...S.btn, opacity: loading ? 0.6 : 1, marginBottom:12 }}>
               {loading ? "מאפס..." : "שמור סיסמה חדשה"}
             </button>
