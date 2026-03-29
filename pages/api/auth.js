@@ -1,13 +1,25 @@
-import { registerUser, loginUser, canAnalyze } from "../../lib/userStore";
+import { registerUser, loginUser, canAnalyze, sendVerificationCode, verifyCode } from "../../lib/userStore";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
-  const { action, username } = req.body || {};
-  if (!username) return res.status(400).json({ error: "Missing username" });
+  const { action, email, username, code } = req.body || {};
 
-  if (action === "register") return res.status(200).json(await registerUser(username));
-  if (action === "login")    return res.status(200).json(await loginUser(username));
-  if (action === "check")    return res.status(200).json(await canAnalyze(username));
+  // שלב 1: שלח קוד אימות למייל
+  if (action === "send_code") {
+    if (!email) return res.status(400).json({ error: "חסר מייל" });
+    return res.status(200).json(await sendVerificationCode(email));
+  }
 
-  res.status(400).json({ error: "Unknown action" });
+  // שלב 2: אמת קוד וכנס/רשום
+  if (action === "verify") {
+    if (!email || !code) return res.status(400).json({ error: "חסר מייל או קוד" });
+    return res.status(200).json(await verifyCode(email, code, username));
+  }
+
+  if (action === "check") {
+    if (!email) return res.status(400).json({ error: "חסר מייל" });
+    return res.status(200).json(await canAnalyze(email));
+  }
+
+  res.status(400).json({ error: "פעולה לא מוכרת" });
 }
