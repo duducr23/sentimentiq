@@ -189,7 +189,7 @@ export default function Home() {
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 42, height: 42, background: "linear-gradient(135deg,#f4b942,#e09500)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>📡</div>
             <div>
-              <div style={{ fontSize: 22, fontWeight: 800 }}>SentimentIQ</div>
+              <div style={{ fontSize: 22, fontWeight: 800 }}>DR STOCKS 26</div>
               <div style={{ fontSize: 10, fontFamily: "monospace", color: "#64748b", letterSpacing: 2 }}>LIVE MARKET INTELLIGENCE</div>
             </div>
           </div>

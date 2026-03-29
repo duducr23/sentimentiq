@@ -54,7 +54,7 @@ export default function Login() {
       <div style={S.card}>
         <div style={{ textAlign:"center", marginBottom:28 }}>
           <div style={{ width:56, height:56, background:"linear-gradient(135deg,#f4b942,#e09500)", borderRadius:14, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, margin:"0 auto 12px", boxShadow:"0 0 24px rgba(244,185,66,0.3)" }}>📡</div>
-          <div style={{ fontSize:24, fontWeight:900, color:"#e2e8f0" }}>SentimentIQ</div>
+          <div style={{ fontSize:24, fontWeight:900, color:"#e2e8f0" }}>DR STOCKS 26</div>
           <div style={{ fontSize:11, color:"#64748b", fontFamily:"monospace", letterSpacing:2, marginTop:2 }}>LIVE MARKET INTELLIGENCE</div>
         </div>
 
