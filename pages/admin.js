@@ -42,6 +42,8 @@ export default function Admin() {
   const [cacheSize, setCacheSize] = useState(0);
   const [activeTab, setActiveTab] = useState("content"); // "content" | "cache" | "users"
   const [stats, setStats] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editCredits, setEditCredits] = useState(3);
   const fileRef = useRef();
 
   const login = async () => {
@@ -52,6 +54,16 @@ export default function Admin() {
     });
     if (r.ok) { setAuthed(true); setPwErr(false); loadData(); loadCache(); loadStats(); }
     else setPwErr(true);
+  };
+
+  const updateCredits = async (username, credits) => {
+    await fetch("/api/credits", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password, username, credits }),
+    });
+    setEditingUser(null);
+    loadStats();
   };
 
   const loadStats = async () => {
@@ -196,6 +208,12 @@ export default function Admin() {
                             <td style={{ padding: "10px 16px", fontSize: 12, color: "#64748b", fontFamily: "monospace" }}>{u.createdAt}</td>
                             <td style={{ padding: "10px 16px", fontSize: 13, fontFamily: "monospace", color: u.dailyCount >= 3 ? "#ef4444" : "#f4b942" }}>{u.dailyCount}/3</td>
                             <td style={{ padding: "10px 16px", fontSize: 13, color: "#94a3b8", fontFamily: "monospace" }}>{u.totalAnalyses}</td>
+                            <td style={{ padding: "10px 16px" }}>
+                              <button onClick={() => { setEditingUser(u.username); setEditCredits(u.dailyCount); }}
+                                style={{ padding:"4px 10px", background:"rgba(244,185,66,0.1)", border:"1px solid rgba(244,185,66,0.2)", borderRadius:6, color:"#f4b942", fontSize:11, cursor:"pointer" }}>
+                                ✏️ קרדיטים
+                              </button>
+                            </td>
                           </tr>
                         ))}
                         {stats.recentUsers.length === 0 && (

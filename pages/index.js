@@ -72,7 +72,19 @@ export default function Home() {
   const [fromCache, setFromCache] = useState(false);
   const [chartAnalysis, setChartAnalysis] = useState(null);
   const [showChartUpload, setShowChartUpload] = useState(false);
-  const [activeView, setActiveView] = useState("analysis"); // analysis | report
+  const [activeView, setActiveView] = useState("analysis"); // analysis | report | cache
+  const [cacheEntries, setCacheEntries] = useState([]);
+  const [cacheLoading, setCacheLoading] = useState(false);
+
+  const loadCacheEntries = async () => {
+    setCacheLoading(true);
+    try {
+      const r = await fetch("/api/cache");
+      const d = await r.json();
+      setCacheEntries(d.entries || []);
+    } catch(_) {}
+    setCacheLoading(false);
+  };
 
   const [currentUser, setCurrentUser] = useState(null);
   const [dailyCount, setDailyCount]   = useState(0);
@@ -287,19 +299,22 @@ export default function Home() {
         </div>
 
         {/* Mode Switcher - always visible */}
-        <div style={{ display:"flex", gap:10, marginBottom:16 }}>
+        <div style={{ display:"flex", gap:8, marginBottom:16 }}>
           <div onClick={() => setActiveView("analysis")}
-            style={{ flex:1, padding:"12px 16px", borderRadius:12, cursor:"pointer", textAlign:"center", background: activeView==="analysis" ? "rgba(255,255,255,0.04)" : "#0d1420", border:`1px solid ${activeView==="analysis" ? meta.color : "rgba(255,255,255,0.07)"}`, transition:"all 0.2s" }}>
-            <div style={{ fontSize:18, marginBottom:4 }}>🔍</div>
-            <div style={{ fontSize:13, fontWeight:700, color: activeView==="analysis" ? meta.color : "#94a3b8" }}>ניתוח שוק</div>
-            <div style={{ fontSize:10, color:"#475569", marginTop:2 }}>שאל שאלה + AI</div>
+            style={{ flex:1, padding:"10px 8px", borderRadius:12, cursor:"pointer", textAlign:"center", background: activeView==="analysis" ? "rgba(255,255,255,0.04)" : "#0d1420", border:`1px solid ${activeView==="analysis" ? meta.color : "rgba(255,255,255,0.07)"}`, transition:"all 0.2s" }}>
+            <div style={{ fontSize:16, marginBottom:3 }}>🔍</div>
+            <div style={{ fontSize:12, fontWeight:700, color: activeView==="analysis" ? meta.color : "#94a3b8" }}>ניתוח שוק</div>
           </div>
           <div onClick={() => setActiveView("report")}
-            style={{ flex:1, padding:"12px 16px", borderRadius:12, cursor:"pointer", textAlign:"center", background: activeView==="report" ? "rgba(255,255,255,0.04)" : "#0d1420", border:`1px solid ${activeView==="report" ? meta.color : "rgba(255,255,255,0.07)"}`, transition:"all 0.2s", position:"relative" }}>
-            <div style={{ position:"absolute", top:-8, right:-8, background:"#f4b942", color:"#080c14", fontSize:9, fontWeight:900, padding:"2px 7px", borderRadius:8 }}>חדש</div>
-            <div style={{ fontSize:18, marginBottom:4 }}>📋</div>
-            <div style={{ fontSize:13, fontWeight:700, color: activeView==="report" ? meta.color : "#94a3b8" }}>דוח מלא</div>
-            <div style={{ fontSize:10, color:"#475569", marginTop:2 }}>העלה גרף → דוח 10 שורות</div>
+            style={{ flex:1, padding:"10px 8px", borderRadius:12, cursor:"pointer", textAlign:"center", background: activeView==="report" ? "rgba(255,255,255,0.04)" : "#0d1420", border:`1px solid ${activeView==="report" ? meta.color : "rgba(255,255,255,0.07)"}`, transition:"all 0.2s", position:"relative" }}>
+            <div style={{ position:"absolute", top:-6, right:-6, background:"#f4b942", color:"#080c14", fontSize:8, fontWeight:900, padding:"1px 5px", borderRadius:6 }}>חדש</div>
+            <div style={{ fontSize:16, marginBottom:3 }}>📋</div>
+            <div style={{ fontSize:12, fontWeight:700, color: activeView==="report" ? meta.color : "#94a3b8" }}>דוח מלא</div>
+          </div>
+          <div onClick={() => { setActiveView("cache"); loadCacheEntries(); }}
+            style={{ flex:1, padding:"10px 8px", borderRadius:12, cursor:"pointer", textAlign:"center", background: activeView==="cache" ? "rgba(255,255,255,0.04)" : "#0d1420", border:`1px solid ${activeView==="cache" ? "#10b981" : "rgba(255,255,255,0.07)"}`, transition:"all 0.2s" }}>
+            <div style={{ fontSize:16, marginBottom:3 }}>⚡</div>
+            <div style={{ fontSize:12, fontWeight:700, color: activeView==="cache" ? "#10b981" : "#94a3b8" }}>מאגר שאלות</div>
           </div>
         </div>
 
@@ -318,6 +333,41 @@ export default function Home() {
               color={meta.color}
               username={currentUser?.username}
             />
+          </div>
+        )}
+
+        {/* Cache View */}
+        {activeView === "cache" && (
+          <div>
+            <div style={{ marginBottom:16, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div style={{ fontSize:13, color:"#64748b" }}>שאלות שנשאלו — פתוח לכולם, ללא ניצול קרדיטים</div>
+              <button onClick={loadCacheEntries} style={{ padding:"6px 12px", background:"rgba(16,185,129,0.1)", border:"1px solid rgba(16,185,129,0.2)", borderRadius:8, color:"#10b981", fontSize:11, cursor:"pointer" }}>🔄 רענן</button>
+            </div>
+            {cacheLoading && <div style={{ textAlign:"center", padding:30, color:"#64748b" }}>טוען...</div>}
+            {!cacheLoading && cacheEntries.length === 0 && (
+              <div style={{ textAlign:"center", padding:40, color:"#475569", background:"#0d1420", borderRadius:12, border:"1px solid rgba(255,255,255,0.06)" }}>
+                <div style={{ fontSize:28, marginBottom:8 }}>⚡</div>
+                <div>אין שאלות במאגר עדיין</div>
+                <div style={{ fontSize:12, marginTop:6, color:"#334155" }}>שאלות שנשאלות מופיעות כאן ל-24 שעות</div>
+              </div>
+            )}
+            {!cacheLoading && cacheEntries.map((e, i) => (
+              <div key={i} style={{ background:"#0d1420", border:"1px solid rgba(255,255,255,0.06)", borderRight:`3px solid ${e.sentimentScore > 65 ? "#10b981" : e.sentimentScore < 35 ? "#ef4444" : "#f4b942"}`, borderRadius:10, padding:"14px 16px", marginBottom:10 }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8, flexWrap:"wrap", gap:8 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <span style={{ fontSize:11, background: e.market==="stocks" ? "rgba(59,130,246,0.15)" : e.market==="crypto" ? "rgba(244,185,66,0.15)" : "rgba(16,185,129,0.15)", color: e.market==="stocks" ? "#3b82f6" : e.market==="crypto" ? "#f4b942" : "#10b981", padding:"2px 8px", borderRadius:6, fontFamily:"monospace" }}>
+                      {e.market==="stocks" ? "📈 מניות" : e.market==="crypto" ? "₿ קריפטו" : "🛢️ סחורות"}
+                    </span>
+                    <span style={{ fontSize:11, color:"#475569", fontFamily:"monospace" }}>פג בעוד {e.expiresIn}</span>
+                  </div>
+                  <span style={{ fontSize:13, fontWeight:700, color: e.sentimentScore > 65 ? "#10b981" : e.sentimentScore < 35 ? "#ef4444" : "#f4b942", fontFamily:"monospace" }}>
+                    {e.sentimentScore} — {e.sentimentLabel}
+                  </span>
+                </div>
+                <div style={{ fontSize:14, color:"#e2e8f0", marginBottom:4 }}>{e.query}</div>
+                <div style={{ fontSize:11, color:"#475569", fontFamily:"monospace" }}>נשאלה ב: {e.cachedAt}</div>
+              </div>
+            ))}
           </div>
         )}
 
