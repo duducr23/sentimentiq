@@ -53,7 +53,7 @@ export default function Login() {
     const r = await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action:"login", email, password }) });
     const d = await r.json();
     if (d.error) { setError(d.error); setLoading(false); return; }
-    sessionStorage.setItem("siq_user", JSON.stringify(d.user));
+    localStorage.setItem("siq_user", JSON.stringify(d.user));
     router.push("/");
     setLoading(false);
   };
@@ -66,7 +66,7 @@ export default function Login() {
     const r = await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action:"register", email, password, username }) });
     const d = await r.json();
     if (d.error) { setError(d.error); setLoading(false); return; }
-    sessionStorage.setItem("siq_user", JSON.stringify(d.user));
+    localStorage.setItem("siq_user", JSON.stringify(d.user));
     router.push("/");
     setLoading(false);
   };

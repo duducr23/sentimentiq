@@ -91,7 +91,7 @@ export default function Home() {
 
   useEffect(() => {
     // Auth check
-    const stored = sessionStorage.getItem("siq_user");
+    const stored = localStorage.getItem("siq_user");
     if (!stored) { router.push("/login"); return; }
     const user = JSON.parse(stored);
     setCurrentUser(user);
@@ -163,7 +163,7 @@ export default function Home() {
       const r = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ context, query, market, username: currentUser?.username || currentUser?.email }),
+        body: JSON.stringify({ context, query, market, username: currentUser?.username }),
       });
       const d = await r.json();
       if (d.limitReached) { setError(d.error); setLoading(false); setLoadStep(""); return; }
@@ -189,7 +189,7 @@ export default function Home() {
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 42, height: 42, background: "linear-gradient(135deg,#f4b942,#e09500)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>📡</div>
             <div>
-              <div style={{ fontSize: 22, fontWeight: 800 }}>DR STOCKS 26</div>
+              <div style={{ fontSize: 22, fontWeight: 800 }}>SentimentIQ</div>
               <div style={{ fontSize: 10, fontFamily: "monospace", color: "#64748b", letterSpacing: 2 }}>LIVE MARKET INTELLIGENCE</div>
             </div>
           </div>
@@ -206,7 +206,7 @@ export default function Home() {
               </div>
             )}
             <a href="/admin" style={{ padding: "6px 13px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, color: "#475569", fontSize: 12, textDecoration: "none", fontFamily: "monospace" }}>⚙️ Admin</a>
-            <button onClick={() => { sessionStorage.removeItem("siq_user"); router.push("/login"); }} style={{ padding:"6px 13px", background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.15)", borderRadius:8, color:"#64748b", fontSize:11, cursor:"pointer", fontFamily:"monospace" }}>יציאה</button>
+            <button onClick={() => { localStorage.removeItem("siq_user"); router.push("/login"); }} style={{ padding:"6px 13px", background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.15)", borderRadius:8, color:"#64748b", fontSize:11, cursor:"pointer", fontFamily:"monospace" }}>יציאה</button>
           </div>
         </div>
 
