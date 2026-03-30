@@ -209,7 +209,7 @@ export default function Admin() {
                             <td style={{ padding: "10px 16px", fontSize: 13, fontFamily: "monospace", color: u.dailyCount >= (u.dailyLimit ?? 3) ? "#ef4444" : "#f4b942" }}>{u.dailyCount}/{u.dailyLimit ?? 3}</td>
                             <td style={{ padding: "10px 16px", fontSize: 13, color: "#94a3b8", fontFamily: "monospace" }}>{u.totalAnalyses}</td>
                             <td style={{ padding: "10px 16px" }}>
-                              <button onClick={() => { setEditingUser(u.username); setEditCredits(u.dailyCount); }}
+                              <button onClick={() => { setEditingUser(u.email); setEditCredits(u.dailyLimit ?? 3); }}
                                 style={{ padding:"4px 10px", background:"rgba(244,185,66,0.1)", border:"1px solid rgba(244,185,66,0.2)", borderRadius:6, color:"#f4b942", fontSize:11, cursor:"pointer" }}>
                                 ✏️ קרדיטים
                               </button>
@@ -317,6 +317,36 @@ export default function Admin() {
           </div>
         </div>}
       </div>
+
+      {/* ── CREDITS MODAL ── */}
+      {editingUser && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000 }}
+          onClick={() => setEditingUser(null)}>
+          <div style={{ background:"#0d1420", border:"1px solid rgba(255,255,255,0.1)", borderRadius:16, padding:28, width:320, direction:"rtl" }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize:16, fontWeight:800, color:"#e2e8f0", marginBottom:6 }}>✏️ עדכון קרדיטים</div>
+            <div style={{ fontSize:12, color:"#64748b", marginBottom:20, fontFamily:"monospace" }}>{editingUser}</div>
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:20 }}>
+              {[0,1,3,5,10,20,50].map(n => (
+                <button key={n} onClick={() => setEditCredits(n)}
+                  style={{ padding:"8px 14px", borderRadius:8, border:`1px solid ${editCredits===n ? "#f4b942" : "rgba(255,255,255,0.1)"}`, background: editCredits===n ? "rgba(244,185,66,0.15)" : "#080c14", color: editCredits===n ? "#f4b942" : "#64748b", fontWeight: editCredits===n ? 700 : 400, cursor:"pointer", fontSize:13 }}>
+                  {n === 0 ? "🚫 חסום" : `${n}/יום`}
+                </button>
+              ))}
+            </div>
+            <div style={{ display:"flex", gap:10 }}>
+              <button onClick={() => updateCredits(editingUser, editCredits)}
+                style={{ flex:1, padding:11, background:"linear-gradient(135deg,#f4b942,#e09500)", border:"none", borderRadius:10, color:"#080c14", fontWeight:800, fontSize:14, cursor:"pointer" }}>
+                שמור
+              </button>
+              <button onClick={() => setEditingUser(null)}
+                style={{ flex:1, padding:11, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, color:"#64748b", fontSize:14, cursor:"pointer" }}>
+                ביטול
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
