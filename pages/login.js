@@ -12,46 +12,39 @@ const S = {
   link:  { background:"none", border:"none", color:"#f4b942", fontSize:13, cursor:"pointer", textDecoration:"underline", fontFamily:"'Heebo',sans-serif" },
 };
 
-// ⚠️ OUTSIDE Login — prevents re-mount on every keystroke
-function Field({ label, value, onChange, type = "text", placeholder = "", onEnter }) {
+function Field({ label, value, onChange, type="text", placeholder="", onEnter }) {
   return (
-    <div style={{ marginBottom: 14 }}>
+    <div style={{ marginBottom:14 }}>
       <label style={S.label}>{label}</label>
-      <input
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        type={type}
-        placeholder={placeholder}
-        onKeyDown={e => e.key === "Enter" && onEnter && onEnter()}
-        style={{
-          ...S.inp,
-          direction: type === "email" || type === "password" ? "ltr" : "rtl",
-          textAlign: type === "email" || type === "password" ? "left" : "right",
-        }}
-      />
+      <input value={value} onChange={e => onChange(e.target.value)} type={type} placeholder={placeholder}
+        onKeyDown={e => e.key==="Enter" && onEnter && onEnter()}
+        style={{ ...S.inp, direction: type==="email"||type==="password" ? "ltr" : "rtl", textAlign: type==="email"||type==="password" ? "left" : "right" }} />
     </div>
   );
 }
 
 export default function Login() {
   const router = useRouter();
-  const [tab, setTab]                   = useState("login");
-  const [email, setEmail]               = useState("");
-  const [password, setPassword]         = useState("");
-  const [newPassword, setNewPassword]   = useState("");
+  const [tab, setTab]               = useState("login");
+  const [email, setEmail]           = useState("");
+  const [password, setPassword]     = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [username, setUsername]         = useState("");
-  const [code, setCode]                 = useState("");
-  const [loading, setLoading]           = useState(false);
-  const [error, setError]               = useState("");
-  const [msg, setMsg]                   = useState("");
+  const [username, setUsername]     = useState("");
+  const [code, setCode]             = useState("");
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState("");
+  const [msg, setMsg]               = useState("");
+  const [pendingEmail, setPendingEmail] = useState("");
 
   const reset = () => { setError(""); setMsg(""); setPassword(""); setNewPassword(""); setConfirmPassword(""); setCode(""); };
+
   const doLogin = async () => {
     if (!email || !password) { setError("אנא מלא מייל וסיסמה"); return; }
     setLoading(true); setError("");
     const r = await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action:"login", email, password }) });
     const d = await r.json();
+    if (d.needsVerification) { setPendingEmail(d.email || email); setTab("verify"); setMsg("שלחנו קוד אימות למייל שלך"); setLoading(false); return; }
     if (d.error) { setError(d.error); setLoading(false); return; }
     localStorage.setItem("siq_user", JSON.stringify(d.user));
     router.push("/");
@@ -66,8 +59,28 @@ export default function Login() {
     const r = await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action:"register", email, password, username }) });
     const d = await r.json();
     if (d.error) { setError(d.error); setLoading(false); return; }
+    if (d.needsVerification) { setPendingEmail(d.email || email); setTab("verify"); setMsg("שלחנו קוד אימות למייל שלך — בדוק תיבת דואר"); setLoading(false); return; }
     localStorage.setItem("siq_user", JSON.stringify(d.user));
     router.push("/");
+    setLoading(false);
+  };
+
+  const doVerify = async () => {
+    if (!code) { setError("אנא הכנס קוד"); return; }
+    setLoading(true); setError("");
+    const r = await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action:"verify", email: pendingEmail, code }) });
+    const d = await r.json();
+    if (d.error) { setError(d.error); setLoading(false); return; }
+    localStorage.setItem("siq_user", JSON.stringify(d.user));
+    router.push("/");
+    setLoading(false);
+  };
+
+  const doResend = async () => {
+    setLoading(true); setError("");
+    const r = await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action:"resend", email: pendingEmail }) });
+    const d = await r.json();
+    if (d.error) { setError(d.error); } else { setMsg("קוד חדש נשלח!"); }
     setLoading(false);
   };
 
@@ -109,27 +122,26 @@ export default function Login() {
         </div>
 
         {/* Tabs */}
-        {(tab === "login" || tab === "register") && (
+        {(tab==="login"||tab==="register") && (
           <div style={{ display:"flex", background:"#080c14", borderRadius:10, padding:3, marginBottom:22, gap:3 }}>
             {[["login","כניסה"],["register","הרשמה"]].map(([key,label]) => (
               <div key={key} onClick={() => { setTab(key); reset(); }}
-                style={{ flex:1, textAlign:"center", padding:"9px", borderRadius:8, cursor:"pointer", background: tab===key ? "#0d1420" : "transparent", color: tab===key ? "#f4b942" : "#64748b", fontWeight: tab===key ? 700 : 400, fontSize:14, transition:"all 0.2s", border: tab===key ? "1px solid rgba(244,185,66,0.2)" : "1px solid transparent" }}>
+                style={{ flex:1, textAlign:"center", padding:"9px", borderRadius:8, cursor:"pointer", background:tab===key?"#0d1420":"transparent", color:tab===key?"#f4b942":"#64748b", fontWeight:tab===key?700:400, fontSize:14, transition:"all 0.2s", border:tab===key?"1px solid rgba(244,185,66,0.2)":"1px solid transparent" }}>
                 {label}
               </div>
             ))}
           </div>
         )}
 
-        {/* Messages */}
         {error && <div style={S.err}>{error}</div>}
-        {msg && <div style={S.ok}>{msg}</div>}
+        {msg   && <div style={S.ok}>{msg}</div>}
 
         {/* LOGIN */}
-        {tab === "login" && (
+        {tab==="login" && (
           <>
             <Field label="כתובת מייל" value={email} onChange={setEmail} type="email" placeholder="your@email.com" onEnter={doLogin}/>
             <Field label="סיסמה" value={password} onChange={setPassword} type="password" placeholder="••••••" onEnter={doLogin}/>
-            <button onClick={doLogin} disabled={loading} style={{ ...S.btn, opacity: loading ? 0.6 : 1, marginBottom:12 }}>
+            <button onClick={doLogin} disabled={loading} style={{ ...S.btn, opacity:loading?0.6:1, marginBottom:12 }}>
               {loading ? "מתחבר..." : "כניסה ⚡"}
             </button>
             <div style={{ textAlign:"center" }}>
@@ -139,25 +151,50 @@ export default function Login() {
         )}
 
         {/* REGISTER */}
-        {tab === "register" && (
+        {tab==="register" && (
           <>
             <Field label="שם תצוגה" value={username} onChange={setUsername} placeholder="השם שיוצג לך" onEnter={doRegister}/>
             <Field label="כתובת מייל" value={email} onChange={setEmail} type="email" placeholder="your@email.com" onEnter={doRegister}/>
             <Field label="סיסמה (לפחות 6 תווים)" value={password} onChange={setPassword} type="password" placeholder="••••••" onEnter={doRegister}/>
             <Field label="אימות סיסמה" value={confirmPassword} onChange={setConfirmPassword} type="password" placeholder="••••••" onEnter={doRegister}/>
             <div style={{ fontSize:11, color:"#475569", marginBottom:14, textAlign:"right" }}>⚠️ השם והמייל ינעלו יחד ולא ניתן לשנות</div>
-            <button onClick={doRegister} disabled={loading} style={{ ...S.btn, opacity: loading ? 0.6 : 1 }}>
+            <button onClick={doRegister} disabled={loading} style={{ ...S.btn, opacity:loading?0.6:1 }}>
               {loading ? "נרשם..." : "הרשמה והתחלה ⚡"}
             </button>
           </>
         )}
 
-        {/* FORGOT PASSWORD */}
-        {tab === "forgot" && (
+        {/* VERIFY EMAIL */}
+        {tab==="verify" && (
+          <>
+            <div style={{ textAlign:"center", marginBottom:20 }}>
+              <div style={{ fontSize:40, marginBottom:8 }}>📬</div>
+              <div style={{ fontSize:16, fontWeight:700, color:"#e2e8f0", marginBottom:6 }}>אימות מייל</div>
+              <div style={{ fontSize:12, color:"#64748b" }}>שלחנו קוד ל: <span style={{ color:"#f4b942" }}>{pendingEmail}</span></div>
+            </div>
+            <div style={{ marginBottom:16 }}>
+              <label style={S.label}>קוד אימות (6 ספרות)</label>
+              <input value={code} onChange={e => setCode(e.target.value.replace(/\D/g,"").slice(0,6))}
+                placeholder="123456" inputMode="numeric"
+                onKeyDown={e => e.key==="Enter" && doVerify()}
+                style={{ ...S.inp, textAlign:"center", fontSize:28, letterSpacing:10, fontFamily:"monospace" }}/>
+            </div>
+            <button onClick={doVerify} disabled={loading} style={{ ...S.btn, opacity:loading?0.6:1, marginBottom:12 }}>
+              {loading ? "מאמת..." : "אמת מייל ✅"}
+            </button>
+            <div style={{ textAlign:"center", display:"flex", justifyContent:"center", gap:16 }}>
+              <button onClick={doResend} disabled={loading} style={S.link}>שלח קוד מחדש</button>
+              <button onClick={() => { setTab("login"); reset(); }} style={{ ...S.link, color:"#64748b" }}>← חזרה</button>
+            </div>
+          </>
+        )}
+
+        {/* FORGOT */}
+        {tab==="forgot" && (
           <>
             <div style={{ fontSize:15, fontWeight:700, color:"#e2e8f0", marginBottom:16, textAlign:"right" }}>שחזור סיסמה</div>
             <Field label="כתובת מייל" value={email} onChange={setEmail} type="email" placeholder="your@email.com" onEnter={doForgot}/>
-            <button onClick={doForgot} disabled={loading} style={{ ...S.btn, opacity: loading ? 0.6 : 1, marginBottom:12 }}>
+            <button onClick={doForgot} disabled={loading} style={{ ...S.btn, opacity:loading?0.6:1, marginBottom:12 }}>
               {loading ? "שולח..." : "שלח קוד לאיפוס"}
             </button>
             <div style={{ textAlign:"center" }}>
@@ -166,8 +203,8 @@ export default function Login() {
           </>
         )}
 
-        {/* RESET PASSWORD */}
-        {tab === "reset" && (
+        {/* RESET */}
+        {tab==="reset" && (
           <>
             <div style={{ fontSize:15, fontWeight:700, color:"#e2e8f0", marginBottom:16, textAlign:"right" }}>סיסמה חדשה</div>
             <div style={{ marginBottom:14 }}>
@@ -177,7 +214,7 @@ export default function Login() {
             </div>
             <Field label="סיסמה חדשה" value={newPassword} onChange={setNewPassword} type="password" placeholder="••••••" onEnter={doReset}/>
             <Field label="אימות סיסמה" value={confirmPassword} onChange={setConfirmPassword} type="password" placeholder="••••••" onEnter={doReset}/>
-            <button onClick={doReset} disabled={loading} style={{ ...S.btn, opacity: loading ? 0.6 : 1, marginBottom:12 }}>
+            <button onClick={doReset} disabled={loading} style={{ ...S.btn, opacity:loading?0.6:1, marginBottom:12 }}>
               {loading ? "מאפס..." : "שמור סיסמה חדשה"}
             </button>
             <div style={{ textAlign:"center" }}>
@@ -185,6 +222,7 @@ export default function Login() {
             </div>
           </>
         )}
+
       </div>
     </div>
   );
